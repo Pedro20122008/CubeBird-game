@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube bird</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="startScreen">
+        <div id="startContent">
+            <h1>Cube bird</h1>
+            <p>Pressione <strong>Espaço</strong> para começar</p>
+            <div id="skinSelection">
+                <p>Escolha a Skin:</p>
+                <button onclick="selectSkin('yellow'); startGame()" style="background-color: #FFD700;">Amarelo</button> 
+                <button onclick="selectSkin('red'); startGame()" style="background-color: #FF6347;">Vermelho</button>
+                <button onclick="selectSkin('blue'); startGame()" style="background-color: #1E90FF;">Azul</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="gameContainer" style="display: none;">
+        <canvas id="gameCanvas"></canvas>
+        <div id="gameInfo">
+            <div id="score">Pontuação: 0</div>
+            <div id="coins">Moedas: 0</div>
+            <div id="highScore">Recorde: 0</div>
+            <div id="totalCoins">Total de Moedas: 0</div>
+        </div>
+    </div>
+    <div id="gameOverScreen" style="display: none;">
+        <h1>Game Over</h1>
+        <div id="finalScorep">
+            <p>Pontuação Final: <span id="finalScore">0</span></p>
+        </div>
+        <div id="finalCoinsp">
+            <p>Moedas Coletadas: <span id="finalCoins">0</span></p>
+        </div>
+        <div id="finalTotalScorep">
+            <p>Melhor Pontuação: <span id="finalTotalScore">0</span></p>
+        </div>
+        <div id="finalTotalCoinsp">
+            <p>Total de Moedas: <span id="finalTotalCoins">0</span></p>
+        </div>
+        <button onclick="resetHighScore()" id="resetTotalPoint">Resetar Recorde</button>
+        <div id="skinSelectiona">
+            <p style="text-align: center; margin-top: 280px;"><strong style="font-size: 23px; ">ESCOLHA A SKIN:</strong></p>
+            <div style="text-align: center;">
+                <button onclick="selectSkin('yellow'); startGame()" style="background-color: #FFD700;" id="skinsa">Amarelo</button> 
+                <button onclick="selectSkin('red'); startGame()" style="background-color: #FF6347;" id="skinsv">Vermelho</button>
+                <button onclick="selectSkin('blue'); startGame()" style="background-color: #1E90FF;" id="skinsz">Azul</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
