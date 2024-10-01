@@ -182,6 +182,7 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !gameOver) {
         bird.velocity = bird.lift;
@@ -191,12 +192,25 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
 document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyW' && !gameOver) {
         bird.velocity = bird.lift;
     } else if (e.code === 'KeyW') {
         if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
         } else if (document.getElementById('startScreen').style.display === 'flex') {
+        }
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (!gameOver) {
+        bird.velocity = bird.lift;
+    } else if (e.code === 'Enter') {
+        if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
+            startGame();
+        } else if (document.getElementById('startScreen').style.display === 'flex') {
+            startGame();
         }
     }
 });
