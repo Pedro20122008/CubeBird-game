@@ -112,8 +112,9 @@ function updatePipes() {
         score += 1;
         coins += 1;
 
-        if (score > 10) coins += passed * 2;
-        if (score > 100) coins += passed * 10;
+        if (score > 10) coins += passed * 1.5;
+        if (score > 50) coins += passed * 2;
+        if (score > 100) coins += passed * 5;
     }
 
     pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
@@ -233,4 +234,5 @@ function selectSkin(color) {
 window.addEventListener('load', () => {
     bird.color = localStorage.getItem(birdColorKey) || 'yellow';
 });
+
 
