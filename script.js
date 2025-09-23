@@ -215,10 +215,6 @@ document.addEventListener('keydown', (e) => {
             bird.velocity = bird.lift;
         }
     }
-
-    if (e.code === 'Enter' && gameOver) {
-        startGame();
-    }
 });
 
 document.addEventListener('click', () => {
@@ -237,3 +233,4 @@ function selectSkin(color) {
 window.addEventListener('load', () => {
     bird.color = localStorage.getItem(birdColorKey) || 'yellow';
 });
+
