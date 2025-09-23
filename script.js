@@ -10,9 +10,9 @@ let bird = {
     width: 20,
     height: 20,
     gravity: 0.6,
-    lift: -8, // Valor reduzido para o pulo
+    lift: -8,
     velocity: 0,
-    color: localStorage.getItem('birdColor') || 'yellow' // Carrega a cor da skin do pássaro
+    color: localStorage.getItem('birdColor') || 'yellow'
 };
 
 let pipes = [];
@@ -44,20 +44,33 @@ function updateBird() {
 }
 
 function createPipe() {
-    let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap - 20)) + 10;
-    pipes.push({
+    const minPipeHeight = 50;
+    const maxPipeHeight = canvas.height - pipeGap - 50;
+
+    let pipeHeight = Math.floor(Math.random() * (maxPipeHeight - minPipeHeight + 1)) + minPipeHeight;
+
+    // Aleatoriamente decide se este par será móvel
+    const isMoving = Math.random() < 0.33; // 33% de chance
+
+    const topPipe = {
         x: canvas.width,
         y: 0,
         width: pipeWidth,
-        height: pipeHeight
-    });
-    pipes.push({
+        height: pipeHeight,
+        dy: isMoving ? 1 : 0 // se moverá para baixo ou não
+    };
+
+    const bottomPipe = {
         x: canvas.width,
         y: pipeHeight + pipeGap,
         width: pipeWidth,
-        height: canvas.height - pipeHeight - pipeGap
-    });
+        height: canvas.height - (pipeHeight + pipeGap),
+        dy: isMoving ? 1 : 0
+    };
+
+    pipes.push(topPipe, bottomPipe);
 }
+
 
 function drawPipes() {
     ctx.fillStyle = '#0f0';
@@ -67,24 +80,22 @@ function drawPipes() {
 }
 
 function updatePipes() {
+    let speed = 2 + Math.floor(score / 20); // dificuldade progressiva
+
     pipes.forEach(pipe => {
-        pipe.x -= 2;
+        pipe.x -= speed;
 
-        if (pipe.x + pipe.width < 0) {
-            pipes.shift();
-            pipes.shift();
-            score ++; //adiciona 1 ponto por bloco passado
-            coins += 1; // Adiciona uma moeda a cada ponto
-            if(score>10){
-                 coins += 2;// A partir de de 10 voce ganhara 2 coins
-            }
-            if(score>100){
-                coins += 10;// A partir de de 100 voce ganhara 10 coins
-            }
+        // Movimento vertical se tiver 'dy'
+        if (pipe.dy) {
+            pipe.y += pipe.dy;
 
+            // Limites verticais para o cano
+            if (pipe.y <= 0 || pipe.y + pipe.height >= canvas.height) {
+                pipe.dy *= -1; // Inverte direção
+            }
         }
-        
 
+        // Colisão
         if (
             bird.x < pipe.x + pipe.width &&
             bird.x + bird.width > pipe.x &&
@@ -94,7 +105,21 @@ function updatePipes() {
             gameOver = true;
         }
     });
+
+    // Remove canos fora da tela e calcula score
+    const passed = pipes.filter(pipe => pipe.x + pipe.width < 1).length / 2;
+    if (passed > 0) {
+        score += 1;
+        coins += 1;
+
+        if (score > 10) coins += passed * 2;
+        if (score > 100) coins += passed * 10;
+    }
+
+    pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
 }
+
+
 
 function drawInfo() {
     document.getElementById('score').textContent = `Pontuação: ${score}`;
@@ -113,32 +138,41 @@ function updateHighScore() {
 function updateTotalCoins() {
     totalCoins += coins;
     localStorage.setItem(totalCoinsKey, totalCoins);
-    document.getElementById('totalCoins').textContent = `Total de Moedas: ${totalCoins}`; // Atualiza o contador de moedas totais na fase
+    document.getElementById('totalCoins').textContent = `Total de Moedas: ${totalCoins}`;
 }
 
 function showGameOverScreen() {
     document.getElementById('gameOverScreen').style.display = 'flex';
     document.getElementById('finalScore').textContent = score;
     document.getElementById('finalCoins').textContent = coins;
-    document.getElementById('finalTotalScore').textContent = highScore; // Exibe o recorde
-    document.getElementById('finalTotalCoins').textContent = totalCoins; // Exibe o total de moedas
+    document.getElementById('finalTotalScore').textContent = highScore;
+    document.getElementById('finalTotalCoins').textContent = totalCoins;
     document.getElementById('gameContainer').style.display = 'none';
+    setTimeout(() => {
+        document.getElementById('gameOverScreen').style.display = 'none';
+        document.getElementById('startScreen').style.display = 'flex';
+        updateInitialStats();
+    }, 3000);
 }
-
 
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('gameOverScreen').style.display = 'none';
     document.getElementById('gameContainer').style.display = 'flex';
-    
+
     bird.y = 150;
     bird.velocity = 0;
     pipes = [];
     score = 0;
     coins = 0;
     gameOver = false;
-    
-    createPipe();
+        
+    const startHeight = (canvas.height - pipeGap) / 2;
+    pipes.push({ x: canvas.width, y: 0, width: pipeWidth, height: startHeight });
+    pipes.push({ x: canvas.width, y: startHeight + pipeGap, width: pipeWidth, height: canvas.height - (startHeight + pipeGap) });
+
+    frame = 1; 
+
     draw();
 }
 
@@ -146,7 +180,7 @@ function resetHighScore() {
     localStorage.removeItem(highScoreKey);
     highScore = 0;
     document.getElementById('highScore').textContent = `Recorde: ${highScore}`;
-  }
+}
 
 function draw() {
     if (gameOver) {
@@ -155,77 +189,51 @@ function draw() {
         showGameOverScreen();
         return;
     }
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     updateBird();
     drawBird();
-    
+
     if (frame % 90 === 0) {
         createPipe();
     }
-    
+
     updatePipes();
     drawPipes();
     drawInfo();
-    
+
     frame++;
     requestAnimationFrame(draw);
 }
 
+
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'ArrowUp' && !gameOver) {
-        bird.velocity = bird.lift;
-    } else if (e.code === 'ArrowUp') {
-        if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
-        } else if (document.getElementById('startScreen').style.display === 'flex') {
+    const jumpKeys = ['ArrowUp', 'Space', 'KeyW'];
+    if (jumpKeys.includes(e.code)) {
+        if (!gameOver) {
+            bird.velocity = bird.lift;
         }
+    }
+
+    if (e.code === 'Enter' && gameOver) {
+        startGame();
     }
 });
 
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !gameOver) {
-        bird.velocity = bird.lift;
-    } else if (e.code === 'Space') {
-        if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
-        } else if (document.getElementById('startScreen').style.display === 'flex') {
-        }
-    }
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyW' && !gameOver) {
-        bird.velocity = bird.lift;
-    } else if (e.code === 'KeyW') {
-        if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
-        } else if (document.getElementById('startScreen').style.display === 'flex') {
-        }
-    }
-});
-
-document.addEventListener('click', (e) => {
+document.addEventListener('click', () => {
     if (!gameOver) {
         bird.velocity = bird.lift;
-    } else if (e.code === 'Enter') {
-        if (document.getElementById('startScreen').style.display === 'none' && gameOver) {
-            startGame();
-        } else if (document.getElementById('startScreen').style.display === 'flex') {
-            startGame();
-        }
+    } else {
+        startGame();
     }
 });
 
-// Adiciona a lógica para selecionar a skin
 function selectSkin(color) {
     bird.color = color;
     localStorage.setItem(birdColorKey, color);
 }
 
-function selectSkin(color) {
-    bird.color = color;
-    localStorage.setItem(birdColorKey, color);
-}
-// Carrega a skin escolhida quando a página é carregada
 window.addEventListener('load', () => {
-    bird.color = localStorage.getItem(birdColorKey) || 'yellow'; // Define a cor do pássaro
+    bird.color = localStorage.getItem(birdColorKey) || 'yellow';
 });
